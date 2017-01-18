@@ -1,5 +1,7 @@
 package main
 
+type Register int
+
 const (
 	ACC Register = 1
 	DAT Register = 2
