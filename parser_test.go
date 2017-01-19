@@ -221,6 +221,31 @@ func TestParseTrace(t *testing.T) {
 `,
 			output: [][]byte{{0, 0, 0, 0}},
 		},
+		{
+			input: `....
+....
+....
+....
+			`,
+			output: [][]byte{
+				{0, 0, 0, 0},
+				{0, 0, 0, 0},
+				{0, 0, 0, 0},
+				{0, 0, 0, 0},
+			},
+		},
+		{
+			input: `.1..
+
+`,
+			output: [][]byte{{0, 1, 0, 0}},
+		},
+		{
+			input: `.4C.
+
+`,
+			output: [][]byte{{0, 4, 12, 0}},
+		},
 	}
 
 	for _, test := range tests {
