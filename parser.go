@@ -208,6 +208,9 @@ func ParseInstruction(chip *Chip, line string) Instruction {
 var PortNameRegex = regexp.MustCompile(`p[0-9]`)
 
 func stringToArgument(chip *Chip, arg string) Argument {
+	if arg == "" {
+		return nil
+	}
 
 	matched := PortNameRegex.MatchString(arg)
 

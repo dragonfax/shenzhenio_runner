@@ -117,3 +117,57 @@ func TestInstructionRegex(t *testing.T) {
 	}
 
 }
+
+func TestParseInstruction(t *testing.T) {
+
+	chip := NewChip()
+
+	if ParseInstruction(&chip, "jmp") != NewInstruction(JMP) {
+		t.Fail()
+		t.Log("failed to parse 'jmp'")
+	}
+
+	i := NewInstruction(JMP)
+	i.Label = "z"
+	if ParseInstruction(&chip, "z:jmp") != i {
+		t.Fail()
+		t.Log("failed to parse a label")
+	}
+
+	i.Label = ""
+	i.Once = true
+	if ParseInstruction(&chip, "@jmp") != i {
+		t.Fail()
+		t.Log("failed to parse an init")
+	}
+
+	i.Once = false
+	i.Plus = true
+	if ParseInstruction(&chip, "+jmp") != i {
+		t.Fail()
+		t.Log("failed to parse a plus")
+	}
+
+	i.Plus = false
+	i.Minus = true
+	if ParseInstruction(&chip, "-jmp") != i {
+		t.Fail()
+		t.Log("failed to parse a minus")
+	}
+
+	if _, ok := ParseInstruction(&chip, "mov 1 acc").FirstArgument.(Number); !ok {
+		t.Fail()
+		t.Log("failed to parse a number argument")
+	}
+
+	if _, ok := ParseInstruction(&chip, "mov 1 acc").SecondArgument.(*Register); !ok {
+		t.Fail()
+		t.Log("failed to parse a register argument")
+	}
+
+	if _, ok := ParseInstruction(&chip, "mov p0 acc").FirstArgument.(*BoundSimplePort); !ok {
+		t.Fail()
+		t.Log("failed to parse a port argument")
+	}
+
+}
