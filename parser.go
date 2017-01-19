@@ -85,10 +85,13 @@ func parseChip(scanner *bufio.Scanner) *Chip {
 
 	chip := NewChip()
 
-CHIP:
-	for scanner.Scan(); scanner.Text() != "\n"; {
+	for scanner.Scan() {
 
 		line := scanner.Text()
+
+		if line == "\n" {
+			break
+		}
 
 		if strings.HasPrefix(line, "[type]") {
 			chip.Type = line[7:]
@@ -109,7 +112,7 @@ CHIP:
 		} else if line == "[code]\n" {
 			chip.Instructions = parseCode(&chip, scanner)
 			// and end the whole chip definition as well
-			break CHIP
+			break
 		}
 	}
 
@@ -156,8 +159,11 @@ func processTraces(chips []*Chip, trace [][]byte) {
 
 func parseCode(chip *Chip, scanner *bufio.Scanner) []Instruction {
 	instructions := make([]Instruction, 0, 1)
-	for scanner.Scan(); scanner.Text() != "\n"; {
+	for scanner.Scan() {
 		line := scanner.Text()
+		if line == "\n" {
+			break
+		}
 		instructions = append(instructions, ParseInstruction(chip, line))
 	}
 	return instructions
