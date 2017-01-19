@@ -1,10 +1,5 @@
 package main
 
-import (
-	"regexp"
-	"strconv"
-)
-
 type InstType string
 
 const (
@@ -33,79 +28,6 @@ type Instruction struct {
 	Minus          bool
 	Once           bool
 	Ran            bool
-}
-
-/*
-
-captures
-0: whole string
-1: @
-2: label with colon
-3: label
-4: plus/minus
-5: command
-6: argument 1
-7: argument 2
-8: command with hash mark
-
-*/
-var InstructionRegex = regexp.MustCompile(
-	`^(@)\s*(([a-zA-Z][_a-zA-Z0-9]+)\s*:)?\s*(\+|\-)?\s*([a-z]{3})\s*([_a-zA-Z0-9]+)?\s*([_a-zA-Z0-9]+)?\s*(#.*)?$`)
-
-func ParseInstruction(chip *Chip, line string) Instruction {
-	matches := InstructionRegex.FindStringSubmatch(line)
-
-	once := len(matches[1]) > 0
-
-	label := matches[3]
-
-	plusminus := matches[4]
-	plus := plusminus == "+"
-	minus := plusminus == "-"
-
-	command := matches[5]
-	var cmd InstType = InstType(command)
-
-	arg1 := matches[6]
-	a1 := stringToArgument(chip, arg1)
-
-	arg2 := matches[7]
-	a2 := stringToArgument(chip, arg2)
-
-	instruction := NewInstruction(cmd)
-	instruction.Once = once
-	instruction.Label = label
-	instruction.Plus = plus
-	instruction.Minus = minus
-	instruction.FirstArgument = a1
-	instruction.SecondArgument = a2
-	return instruction
-}
-
-var PortNameRegex = regexp.MustCompile(`p[0-9]`)
-
-func stringToArgument(chip *Chip, arg string) Argument {
-
-	matched := PortNameRegex.MatchString(arg)
-
-	if matched {
-		return chip.PortNameToPort(arg)
-	}
-
-	num, err := strconv.Atoi(arg)
-	if err == nil {
-		return Number(num)
-	}
-
-	if arg == "acc" {
-		return chip.ACC
-	}
-
-	if arg == "dat" {
-		return chip.DAT
-	}
-
-	panic("unknown instruction argument '" + arg + "'")
 }
 
 func NewInstruction(t InstType) Instruction {
