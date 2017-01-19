@@ -324,3 +324,56 @@ z:mov p1 dat
 	}
 
 }
+
+// parsing whole files now.
+func TestParseString(t *testing.T) {
+
+	content := `[name] Without ping
+[puzzle] Sz016
+
+[traces] 
+......................
+......................
+......................
+......................
+......................
+.......15555C.........
+.......1C...A...94....
+........34.16..16.....
+.......954.1554154....
+.......A.......1C.....
+......16........34....
+......................
+......................
+......................
+
+[chip] 
+[type] RADIO
+[x] 4
+[y] 2
+[is-puzzle-provided] true
+
+[chip] 
+[type] UC6
+[x] 9
+[y] 4
+[code] 
+  mov x1 dat
+  teq dat -1
+- teq dat -999
++ mov 0 x0
+- mov 1 x0
++ jmp z
+  teq dat 1
++ dst x1 1
+- dst x1 0
+  
+`
+
+	chips := ParseString(content)
+
+	if len(chips) != 2 {
+		t.Fail()
+		t.Log("failed tp parse a whole file. wrong number of chips")
+	}
+}
