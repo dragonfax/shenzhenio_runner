@@ -5,23 +5,23 @@ import (
 	"strconv"
 )
 
-type InstType int
+type InstType string
 
 const (
-	MOV InstType = iota
-	ADD
-	SUB
-	SLP
-	JMP
-	MUL
-	NOT
-	DGT
-	DST
-	TEQ
-	TGT
-	TLT
-	TCP
-	NOOP
+	MOV InstType = "mov"
+	ADD InstType = "add"
+	SUB InstType = "sub"
+	SLP InstType = "slp"
+	JMP InstType = "jmp"
+	MUL InstType = "mul"
+	NOT InstType = "not"
+	DGT InstType = "dgt"
+	DST InstType = "dst"
+	TEQ InstType = "teq"
+	TGT InstType = "tgt"
+	TLT InstType = "tlt"
+	TCP InstType = "tcp"
+	NOP InstType = "nop"
 )
 
 type Instruction struct {
@@ -64,16 +64,7 @@ func ParseInstruction(chip *Chip, line string) Instruction {
 	minus := plusminus == "-"
 
 	command := matches[5]
-	var cmd InstType
-	switch command {
-	case "mov":
-		cmd = MOV
-	case "jmp":
-		cmd = JMP
-	//TODO
-	default:
-		panic("Unknown command '" + command + "'")
-	}
+	var cmd InstType = InstType(command)
 
 	arg1 := matches[6]
 	a1 := stringToArgument(chip, arg1)
