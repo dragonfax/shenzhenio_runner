@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -139,6 +140,13 @@ func TestParseInstruction(t *testing.T) {
 	}
 
 	i.Label = ""
+	i.FirstArgument = Label("z")
+	if ParseInstruction(&chip, "jmp z") != i {
+		t.Fail()
+		t.Log("failed to parse 'jmp' with label argument")
+	}
+
+	i.FirstArgument = nil
 	i.Once = true
 	if ParseInstruction(&chip, "@jmp") != i {
 		t.Fail()
@@ -226,6 +234,7 @@ func TestParseTrace(t *testing.T) {
 ....
 ....
 ....
+
 			`,
 			output: [][]byte{
 				{0, 0, 0, 0},
@@ -251,12 +260,67 @@ func TestParseTrace(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.input, func(t *testing.T) {
 			scanner := bufio.NewScanner(strings.NewReader(test.input))
+			scanner.Split(bufio.ScanLines)
 			trace := parseTrace(scanner)
 			result := compareTraces(trace, test.output)
-			if result {
-				t.Fatal("failed to parse '" + test.input + "'")
+			if !result {
+				t.Fatalf("failed to parse '%s' instead got\n%v", test.input, trace)
 			}
 		})
+	}
+
+}
+
+func TestParseChip(t *testing.T) {
+	scanner := bufio.NewScanner(strings.NewReader(`[type] UC6
+[x] 9
+[y] 4
+[code] 
+  mov p1 dat
+
+`))
+	scanner.Split(bufio.ScanLines)
+
+	chip := parseChip(scanner)
+
+	if chip.Type != "UC6" {
+		t.Fail()
+		t.Log("wrong chip type")
+	}
+
+	if chip.X != 9 {
+		t.Fail()
+		t.Log("wrong X")
+	}
+
+	if chip.Y != 4 {
+		t.Fail()
+		t.Log("wrong Y")
+	}
+
+	if len(chip.Instructions) != 1 {
+		t.Fail()
+		t.Log("wrong instructions, counted " + strconv.Itoa(len(chip.Instructions)))
+	}
+
+	// Test with spaces for one line
+
+	scanner = bufio.NewScanner(strings.NewReader(`[type] UC6
+[x] 9
+[y] 4
+[code] 
+z:mov p1 dat
+  
+	jmp z
+
+`))
+	scanner.Split(bufio.ScanLines)
+
+	chip = parseChip(scanner)
+
+	if len(chip.Instructions) != 2 {
+		t.Fail()
+		t.Log("wrong instructions with blank line")
 	}
 
 }

@@ -50,6 +50,7 @@ func hexToInt(r rune) byte {
 
 func ParseReader(reader io.Reader) []*Chip {
 	scanner := bufio.NewScanner(reader)
+	scanner.Split(bufio.ScanLines)
 
 	chips := make([]*Chip, 0, 1)
 	var trace [][]byte
@@ -62,10 +63,10 @@ func ParseReader(reader io.Reader) []*Chip {
 			// skip
 		} else if strings.HasPrefix(text, "[puzzle]") {
 			// skip
-		} else if text == "[traces]\n" {
+		} else if text == "[traces] " {
 			// deal with trace lines until a blank line
 			trace = parseTrace(scanner)
-		} else if text == "[chip]\n" {
+		} else if text == "[chip] " {
 			chip := parseChip(scanner)
 			chips = append(chips, chip)
 		}
@@ -89,7 +90,7 @@ func parseChip(scanner *bufio.Scanner) *Chip {
 
 		line := scanner.Text()
 
-		if line == "\n" {
+		if line == "" {
 			break
 		}
 
@@ -109,7 +110,7 @@ func parseChip(scanner *bufio.Scanner) *Chip {
 			chip.Y = y
 		} else if strings.HasPrefix(line, "[is-puzzle-provided]") {
 			// skip
-		} else if line == "[code]\n" {
+		} else if line == "[code] " {
 			chip.Instructions = parseCode(&chip, scanner)
 			// and end the whole chip definition as well
 			break
@@ -127,15 +128,13 @@ func parseTrace(scanner *bufio.Scanner) [][]byte {
 
 		line := scanner.Text()
 
-		if line == "\n" {
+		if line == "" {
 			break
 		}
 
 		tracerow := make([]byte, 0, 0)
 		for _, r := range line {
-			if r == '\n' {
-				// pass
-			} else if r == '.' {
+			if r == '.' {
 				tracerow = append(tracerow, 0)
 			} else if unicode.IsDigit(r) || unicode.IsLetter(r) {
 				tracerow = append(tracerow, hexToInt(r))
@@ -161,8 +160,11 @@ func parseCode(chip *Chip, scanner *bufio.Scanner) []Instruction {
 	instructions := make([]Instruction, 0, 1)
 	for scanner.Scan() {
 		line := scanner.Text()
-		if line == "\n" {
+		if line == "" {
 			break
+		}
+		if line == "  " {
+			continue
 		}
 		instructions = append(instructions, ParseInstruction(chip, line))
 	}
@@ -243,5 +245,5 @@ func stringToArgument(chip *Chip, arg string) Argument {
 		return &chip.DAT
 	}
 
-	panic("unknown instruction argument '" + arg + "'")
+	return Label(arg)
 }
