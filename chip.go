@@ -23,7 +23,7 @@ func NewChip() Chip {
 		ACC:          Register{},
 		DAT:          Register{},
 		Instructions: make([]Instruction, 0, 1),
-		SimplePorts:  make([]BoundSimplePort, 0, 1),
+		SimplePorts:  []BoundSimplePort{NewBoundSimplePort("p0"), NewBoundSimplePort("p1")},
 		TestPlus:     true,
 		TestMinus:    true,
 	}

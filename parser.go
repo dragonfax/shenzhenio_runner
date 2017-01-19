@@ -41,7 +41,7 @@ func hexToInt(r rune) byte {
 		return b - '0'
 	case b >= 'a' && b <= 'f':
 		return 10 + (b - 'a')
-	case b >= 'A' && b <= 'B':
+	case b >= 'A' && b <= 'F':
 		return 10 + (b - 'A')
 	default:
 		panic("unknown hex character '" + string(b) + "'")
@@ -67,7 +67,7 @@ func ParseReader(reader io.Reader) []*Chip {
 			trace = parseTrace(scanner)
 		} else if text == "[chip]\n" {
 			chip := parseChip(scanner)
-			chips = append(chips, &chip)
+			chips = append(chips, chip)
 		}
 	}
 
@@ -81,7 +81,7 @@ func ParseReader(reader io.Reader) []*Chip {
 	return chips
 }
 
-func parseChip(scanner bufio.Scanner) *Chip {
+func parseChip(scanner *bufio.Scanner) *Chip {
 
 	chip := NewChip()
 
@@ -107,16 +107,16 @@ CHIP:
 		} else if strings.HasPrefix(line, "[is-puzzle-provided]") {
 			// skip
 		} else if line == "[code]\n" {
-			chip.Instructions = parseCode(chip, scanner)
+			chip.Instructions = parseCode(&chip, scanner)
 			// and end the whole chip definition as well
 			break CHIP
 		}
 	}
 
-	return chip
+	return &chip
 }
 
-func parseTrace(scanner bufio.Scanner) [][]byte {
+func parseTrace(scanner *bufio.Scanner) [][]byte {
 
 	trace := make([][]byte, 0, 1)
 
@@ -139,7 +139,7 @@ func parseTrace(scanner bufio.Scanner) [][]byte {
 	return trace
 }
 
-func processTraces(chip *Chip, trace [][]byte) {
+func processTraces(chips []*Chip, trace [][]byte) {
 	// this is going to be ugly.
 
 	// 1. build a set of graphs of connected locations, from the trace connections
@@ -148,10 +148,10 @@ func processTraces(chip *Chip, trace [][]byte) {
 	// 4. Inert all the details in Circuit and Chip
 }
 
-func parseCode(chip *Chip, scanner bufio.Scanner) []Instruction {
+func parseCode(chip *Chip, scanner *bufio.Scanner) []Instruction {
 	instructions := make([]Instruction, 0, 1)
 	for scanner.Scan(); scanner.Text() != "\n"; {
-		line = scanner.Text()
+		line := scanner.Text()
 		instructions = append(instructions, ParseInstruction(chip, line))
 	}
 	return instructions
@@ -221,11 +221,11 @@ func stringToArgument(chip *Chip, arg string) Argument {
 	}
 
 	if arg == "acc" {
-		return chip.ACC
+		return &chip.ACC
 	}
 
 	if arg == "dat" {
-		return chip.DAT
+		return &chip.DAT
 	}
 
 	panic("unknown instruction argument '" + arg + "'")
