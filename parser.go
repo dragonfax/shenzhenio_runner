@@ -11,7 +11,7 @@ import (
 	"unicode/utf8"
 )
 
-func ParseFile(filename string) []*Chip {
+func ParseFile(filename string) []Chip {
 
 	file, err := os.Open(filename)
 	if err != nil {
@@ -21,7 +21,7 @@ func ParseFile(filename string) []*Chip {
 	return ParseReader(file)
 }
 
-func ParseString(content string) []*Chip {
+func ParseString(content string) []Chip {
 	return ParseReader(strings.NewReader(content))
 }
 
@@ -48,11 +48,11 @@ func hexToInt(r rune) byte {
 	}
 }
 
-func ParseReader(reader io.Reader) []*Chip {
+func ParseReader(reader io.Reader) []Chip {
 	scanner := bufio.NewScanner(reader)
 	scanner.Split(bufio.ScanLines)
 
-	chips := make([]*Chip, 0, 1)
+	chips := make([]Chip, 0, 1)
 	var trace [][]byte
 
 	for scanner.Scan() {
@@ -82,7 +82,7 @@ func ParseReader(reader io.Reader) []*Chip {
 	return chips
 }
 
-func parseChip(scanner *bufio.Scanner) *Chip {
+func parseChip(scanner *bufio.Scanner) Chip {
 
 	chip := NewChip()
 
@@ -117,7 +117,7 @@ func parseChip(scanner *bufio.Scanner) *Chip {
 		}
 	}
 
-	return &chip
+	return chip
 }
 
 func parseTrace(scanner *bufio.Scanner) [][]byte {
@@ -147,7 +147,7 @@ func parseTrace(scanner *bufio.Scanner) [][]byte {
 	return trace
 }
 
-func processTraces(chips []*Chip, trace [][]byte) {
+func processTraces(chips []Chip, trace [][]byte) {
 	// this is going to be ugly.
 
 	// 1. build a set of graphs of connected locations, from the trace connections
