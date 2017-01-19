@@ -5,6 +5,9 @@ type Register struct {
 }
 
 type Chip struct {
+	Type         string
+	X            int
+	Y            int
 	ACC          Register
 	DAT          Register
 	Instructions []Instruction
@@ -16,14 +19,31 @@ type Chip struct {
 }
 
 func NewChip() Chip {
-	return Chip{SimpoePorts: make([]BoundSimplePort, 0, 1), TestPlus: true, TestPlus: false}
+	return Chip{
+		ACC:          Register{},
+		DAT:          Register{},
+		Instructions: make([]Instruction, 0, 1),
+		SimplePorts:  make([]BoundSimplePort, 0, 1),
+		TestPlus:     true,
+		TestMinus:    true,
+	}
 }
 
-func (c Chip) ExecuteInstruction() {
-	inst := c.Instructions[IP]
+func (c Chip) PortNameToPort(name string) *BoundSimplePort {
+	for _, p := range c.SimplePorts {
+		if p.Name == name {
+			return &p
+		}
+	}
 
-	if inst.IsFrameSleep() {
-		c.FrameSleep = inst.FirstArg.Number.ToInt()
+	panic("no simple port on chip named '" + name + "'")
+}
+
+func (c *Chip) ExecuteInstruction() {
+	inst := c.Instructions[c.IP]
+
+	if inst.Type == SLP {
+		c.FrameSleep = inst.FirstArgument.GetValue()
 	} else {
 		inst.Execute(c)
 	}
@@ -36,5 +56,15 @@ type BoundSimplePort struct {
 	Circuit *SimpleCircuit
 }
 
-func (bsp *BoundSimplePort) GetValue() int {
+func NewBoundSimplePort(name string) BoundSimplePort {
+	return BoundSimplePort{Name: name, Reading: true}
+}
+
+func (bsp BoundSimplePort) GetValue() int {
+	return bsp.Written.GetValue()
+}
+
+func (bsp *BoundSimplePort) SetValue(i int) {
+	bsp.Written.SetValue(i)
+	bsp.Circuit.Update()
 }

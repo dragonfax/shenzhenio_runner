@@ -4,25 +4,54 @@ import (
 	"bufio"
 	"io"
 	"os"
+	"strconv"
 	"strings"
+	"unicode"
+	"unicode/utf8"
 )
 
-func ParseFile(filename string) ([]*Chip, err) {
+func ParseFile(filename string) []*Chip {
 
 	file, err := os.Open(filename)
 	if err != nil {
-		return err
+		panic(err)
 	}
 
-	return ParseReader(buf)
+	return ParseReader(file)
 }
 
-func ParseString(content string) ([]*Chip, err) {
-	return ParseReader(string.NewReader(content))
+func ParseString(content string) []*Chip {
+	return ParseReader(strings.NewReader(content))
 }
 
-func ParseReader(reader io.Reader) ([]*Chip, err) {
+// translate a single hex character to an int.
+func hexToInt(r rune) byte {
+	buf := make([]byte, 1)
+
+	n := utf8.EncodeRune(buf, r)
+	if n != 1 {
+		panic("ascii rune to byte failed")
+	}
+
+	b := buf[0]
+
+	switch {
+	case b >= '0' && b <= '9':
+		return b - '0'
+	case b >= 'a' && b <= 'f':
+		return 10 + (b - 'a')
+	case b >= 'A' && b <= 'B':
+		return 10 + (b - 'A')
+	default:
+		panic("unknown hex character '" + string(b) + "'")
+	}
+}
+
+func ParseReader(reader io.Reader) []*Chip {
 	scanner := bufio.NewScanner(reader)
+
+	chips := make([]*Chip, 0, 1)
+	trace := make([][]byte, 0, 0)
 
 	for scanner.Scan() {
 
@@ -34,18 +63,19 @@ func ParseReader(reader io.Reader) ([]*Chip, err) {
 			// skip
 		} else if text == "[traces]\n" {
 			// deal with trace lines until a blank line
-			trace := make([][]byte, 0, 0)
 
 			for scanner.Scan(); scanner.Text() != "\n"; {
-				line = scanner.Text()
+				line := scanner.Text()
 				tracerow := make([]byte, 0, 0)
-				for i, r := range line {
+				for _, r := range line {
 					if r == '.' {
 						tracerow = append(tracerow, 0)
-					} else if unicode.isDigit(r) || unicode.isLetter(r) {
+					} else if unicode.IsDigit(r) || unicode.IsLetter(r) {
 						tracerow = append(tracerow, hexToInt(r))
 					}
 				}
+
+				trace = append(trace, tracerow)
 			}
 
 		} else if text == "[chip]\n" {
@@ -55,37 +85,56 @@ func ParseReader(reader io.Reader) ([]*Chip, err) {
 		CHIP:
 			for scanner.Scan(); scanner.Text() != "\n"; {
 
-				line = scanner.Text()
+				line := scanner.Text()
 
-				if string.HasPrefix("[type]") {
+				if strings.HasPrefix(line, "[type]") {
 					chip.Type = line[7:]
-				} else if string.HasPrefix("[x]") {
-					chip.X = line[4:]
-				} else if string.HasPrefix("[y]") {
-					chip.Y = line[4:]
-				} else if string.HasPrefix("[is-puzzle-provided]") {
+				} else if strings.HasPrefix(line, "[x]") {
+					x, err := strconv.Atoi(line[4:])
+					if err != nil {
+						panic("bad X in file")
+					}
+					chip.X = x
+				} else if strings.HasPrefix(line, "[y]") {
+					y, err := strconv.Atoi(line[4:])
+					if err != nil {
+						panic("bad Y in file")
+					}
+					chip.Y = y
+				} else if strings.HasPrefix(line, "[is-puzzle-provided]") {
 					// skip
-				} else if string == "[code]\n" {
+				} else if line == "[code]\n" {
 					// read the code until a newline
 					// and end the whole chip definition as well
 
 					for scanner.Scan(); scanner.Text() != "\n"; {
 						line = scanner.Text()
-						instructions = append(instructions, NewInstruction(line))
+						chip.Instructions = append(chip.Instructions, ParseInstruction(&chip, line))
 					}
 
 					break CHIP
 				}
 			}
 
-			chips = append(chips, chip)
+			processTraces(&chip, trace)
 
+			chips = append(chips, &chip)
 		}
 	}
 
 	err := scanner.Err()
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
 
+	return chips
+}
+
+func processTraces(chip *Chip, trace [][]byte) {
+	// this is going to be ugly.
+
+	// 1. build a set of graphs of connected locations, from the trace connections
+	// 2. create a Circuit for each graph
+	// 3. determine which chips are connected to which graphs by which ports.
+	// 4. Inert all the details in Circuit and Chip
 }

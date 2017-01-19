@@ -5,6 +5,19 @@ type SimpleCircuit struct {
 	Ports []*BoundSimplePort
 }
 
+// the value on a circuit is the maximum of all values that ports are writing to it.
+func (sc *SimpleCircuit) Update() {
+	max := 0
+	for _, p := range sc.Ports {
+		pv := p.GetValue()
+		if pv > max {
+			max = pv
+		}
+	}
+
+	sc.Value.SetValue(max)
+}
+
 /* Simple IO circuits don't use Number as their base,
    as they are capped from 0 to 100
 */

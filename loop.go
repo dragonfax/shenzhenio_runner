@@ -12,8 +12,8 @@ func RunOneFrame(chips []Chip) {
 
 		for _, c := range chips {
 
-			if chip.FrameSleep == 0 {
-				chip.ExecuteInstruction()
+			if c.FrameSleep == 0 {
+				c.ExecuteInstruction()
 			}
 
 			var everythingAsleep = true

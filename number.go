@@ -11,6 +11,10 @@ func (n Number) GetValue() int {
 	return int(n)
 }
 
+func (n *Number) SetValue(i int) {
+	*n = Number(i)
+}
+
 func (n *Number) Add(i int) {
 	new_n := int(*n) + i
 	if new_n > 999 {
