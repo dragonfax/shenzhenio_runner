@@ -173,7 +173,7 @@ captures
 
 */
 var InstructionRegex = regexp.MustCompile(
-	`^(@)\s*(([a-zA-Z][_a-zA-Z0-9]+)\s*:)?\s*(\+|\-)?\s*([a-z]{3})\s*([_a-zA-Z0-9]+)?\s*([_a-zA-Z0-9]+)?\s*(#.*)?$`)
+	`\A(@)?\s*(([a-zA-Z][_a-zA-Z0-9]*)\s*:)?\s*(\+|\-)?\s*([a-z]{3})\s*([_a-zA-Z0-9]+)?\s*([_a-zA-Z0-9]+)?\s*(#.*)?\z`)
 
 func ParseInstruction(chip *Chip, line string) Instruction {
 	matches := InstructionRegex.FindStringSubmatch(line)

@@ -90,3 +90,30 @@ func TestHexToInt(t *testing.T) {
 		t.Log("F != 15")
 	}
 }
+
+func TestInstructionRegex(t *testing.T) {
+
+	tests := []string{
+		"jmp",
+		"z:jmp",
+		"@jmp",
+		"+jmp",
+		"-jmp",
+		"mov 1 acc",
+		"mov p0 acc",
+		"mov acc dat",
+		"jmp#with some comment",
+		"z:mov 1 acc",
+		"z : mov 1 acc # with some comment",
+		"+ mov 1 acc # with some comment",
+	}
+
+	for _, test := range tests {
+		t.Run(test, func(t *testing.T) {
+			if !InstructionRegex.MatchString(test) {
+				t.Fatal("failed to parse instruction '" + test + "'")
+			}
+		})
+	}
+
+}
