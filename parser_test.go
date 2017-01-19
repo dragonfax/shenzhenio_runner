@@ -1,6 +1,10 @@
 package main
 
-import "testing"
+import (
+	"bufio"
+	"strings"
+	"testing"
+)
 
 func TestPortNameRegex(t *testing.T) {
 
@@ -168,6 +172,66 @@ func TestParseInstruction(t *testing.T) {
 	if _, ok := ParseInstruction(&chip, "mov p0 acc").FirstArgument.(*BoundSimplePort); !ok {
 		t.Fail()
 		t.Log("failed to parse a port argument")
+	}
+
+}
+
+func compareTraces(t1 [][]byte, t2 [][]byte) bool {
+
+	if len(t1) != len(t2) {
+		return false
+	}
+
+	for x, tr := range t1 {
+		if len(tr) != len(t2[x]) {
+			return false
+		}
+
+		for y, tc := range tr {
+			if tc != t2[x][y] {
+				return false
+			}
+		}
+	}
+
+	for x, tr := range t2 {
+		if len(tr) != len(t1[x]) {
+			return false
+		}
+
+		for y, tc := range tr {
+			if tc != t1[x][y] {
+				return false
+			}
+		}
+	}
+
+	return true
+}
+
+func TestParseTrace(t *testing.T) {
+
+	tests := []struct {
+		input  string
+		output [][]byte
+	}{
+		{
+			input: `....
+
+`,
+			output: [][]byte{{0, 0, 0, 0}},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.input, func(t *testing.T) {
+			scanner := bufio.NewScanner(strings.NewReader(test.input))
+			trace := parseTrace(scanner)
+			result := compareTraces(trace, test.output)
+			if result {
+				t.Fatal("failed to parse '" + test.input + "'")
+			}
+		})
 	}
 
 }

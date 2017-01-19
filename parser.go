@@ -120,9 +120,15 @@ func parseTrace(scanner *bufio.Scanner) [][]byte {
 
 	trace := make([][]byte, 0, 1)
 
-	for scanner.Scan(); scanner.Text() != "\n"; {
+	for scanner.Scan() {
+
 		line := scanner.Text()
-		tracerow := make([]byte, 0, len(line)-1)
+
+		if line == "\n" {
+			break
+		}
+
+		tracerow := make([]byte, 0, 0)
 		for _, r := range line {
 			if r == '\n' {
 				// pass
