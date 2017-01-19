@@ -1,15 +1,12 @@
 package main
 
-type Register int
-
-const (
-	ACC Register = 1
-	DAT Register = 2
-)
+type Register struct {
+	Number
+}
 
 type Chip struct {
-	ACC          Number
-	DAT          Number
+	ACC          Register
+	DAT          Register
 	Instructions []Instruction
 	IP           int
 	SimplePorts  []BoundSimplePort

@@ -86,69 +86,14 @@ func (c *Chip) ForwardIP() {
 	}
 }
 
-type RegisterRef struct {
-	Chip     Chip
-	Register Register
-}
-
-func (rr *RegisterRef) GetValue() int {
-	if rr.Register == ACC {
-		return rr.Chip.ACC.GetValue()
-	}
-	if rr.Register == DAT {
-		return rr.Chip.DAT.GetValue()
-	}
-}
-
-func (rr *RegisterRef) SetValue(i int) {
-	if rr.Register == ACC {
-		rr.Chip.ACC.SetValue(i)
-	}
-	if rr.Register == DAT {
-		rr.Chip.DAT.SetValue(i)
-	}
-}
-
 /*
-	any of
-	BoundSimplePort
-	Number
-	RegisterReference
+	Instruction Argument
+
+	any of:
+	* BoundSimplePort
+	* Number
+	* Register
 */
 type InstArgument interface {
 	GetValue() int
-}
-
-// Number is twofold
-// * so we can put a number into an instruction argument
-// * so we give bounds to a register value
-// TODO split this into 2 classes.
-
-// can range from -999 to 999
-type Number int
-
-func (n Number) GetValue() int {
-	return int(n)
-}
-
-func (n *Number) Add(i int) {
-	new_n := int(*n) + i
-	if new_n > 999 {
-		new_n = 999
-	}
-	if new_n < -999 {
-		new_n = -999
-	}
-	*n = Number(new_n)
-}
-
-func (n *Number) Sub(i int) {
-	new_n := int(*n) - i
-	if new_n > 999 {
-		new_n = 999
-	}
-	if new_n < -999 {
-		new_n = -999
-	}
-	*n = Number(new_n)
 }
