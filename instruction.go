@@ -27,8 +27,8 @@ const (
 type Instruction struct {
 	Type           InstType
 	Label          string
-	FirstArgument  InstArgument
-	SecondArgument InstArgument
+	FirstArgument  Argument
+	SecondArgument Argument
 	Plus           bool
 	Minus          bool
 	Once           bool
@@ -84,7 +84,7 @@ func ParseInstruction(chip *Chip, line string) Instruction {
 
 var PortNameRegex = regexp.MustCompile(`p[0-9]`)
 
-func stringToArgument(chip *Chip, arg string) InstArgument {
+func stringToArgument(chip *Chip, arg string) Argument {
 
 	matched := PortNameRegex.MatchString(arg)
 
@@ -198,13 +198,13 @@ func (c *Chip) ForwardIP() {
 	* Register
 	* Label
 */
-type InstArgument interface {
+type Argument interface {
 	GetValue() int
 }
 
 type Label string
 
-// must complete interface for Label to be a InstArgument
+// must complete interface for Label to be a Argument
 func (l Label) GetValue() int {
 	return 0
 }
