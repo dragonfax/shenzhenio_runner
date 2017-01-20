@@ -5,7 +5,7 @@ type Register struct {
 }
 
 type Chip struct {
-	Type         string
+	Definition   *ChipDefinition
 	X            int
 	Y            int
 	ACC          Register

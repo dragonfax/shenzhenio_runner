@@ -147,15 +147,6 @@ func parseTrace(scanner *bufio.Scanner) [][]byte {
 	return trace
 }
 
-func processTraces(chips []Chip, trace [][]byte) {
-	// this is going to be ugly.
-
-	// 1. build a set of graphs of connected locations, from the trace connections
-	// 2. create a Circuit for each graph
-	// 3. determine which chips are connected to which graphs by which ports.
-	// 4. Inert all the details in Circuit and Chip
-}
-
 func parseCode(chip *Chip, scanner *bufio.Scanner) []Instruction {
 	instructions := make([]Instruction, 0, 1)
 	for scanner.Scan() {

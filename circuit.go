@@ -5,6 +5,10 @@ type SimpleCircuit struct {
 	Ports []*BoundSimplePort
 }
 
+func NewSimpleCircuit() SimpleCircuit {
+	return SimpleCircuit{Ports: make([]*BoundSimplePort, 0)}
+}
+
 // the value on a circuit is the maximum of all values that ports are writing to it.
 func (sc *SimpleCircuit) Update() {
 	max := 0
